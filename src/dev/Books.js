@@ -5,6 +5,7 @@ import { firestore } from '../firebase'
 export default class Books extends Component {
   state = {
     books: [],
+    pending: false,
   }
 
   add = () => {
@@ -50,6 +51,7 @@ export default class Books extends Component {
         <li>
           <button onClick={this.add}>add</button>
         </li>
+        {this.state.pending && 'Loading...'}
         {this.state.books.map(book => (
           <li key={book.id}>
             <span>{book.title}</span>
@@ -62,12 +64,14 @@ export default class Books extends Component {
   }
 
   componentDidMount() {
+    this.setState({ ...this.state, pending: true })
+
     firestore.collection('books').onSnapshot(querySnapshot => {
       const books = querySnapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data(),
       }))
-      this.setState({ books })
+      this.setState({ pending: false, books })
     })
   }
 }
